@@ -1,0 +1,4 @@
+# ExamplePlugin Configuration
+
+# A friendly prefix shown before plugin messages
+message-prefix: "[ExamplePlugin]"

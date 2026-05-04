@@ -1,0 +1,11 @@
+name: ExamplePlugin
+main: com.example.exampleplugin.Main
+version: ${projectVersion}
+api-version: 1.21
+
+commands:
+  exampleplugin:
+    description: Main command for the ExamplePlugin plugin
+    usage: /exampleplugin <subcommand> [args]
+    aliases:
+      - ep
