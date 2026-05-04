@@ -1,8 +1,8 @@
 package net.trilleo.mc.plugins.tribingo.utils
 
+import com.google.gson.JsonArray
 import net.trilleo.mc.plugins.tribingo.data.PlayerData
 import net.trilleo.mc.plugins.tribingo.data.PlayerDataManager
-import com.google.gson.JsonArray
 import org.bukkit.entity.Player
 
 /**

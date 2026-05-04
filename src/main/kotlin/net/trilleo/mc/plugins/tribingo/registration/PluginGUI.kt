@@ -1,7 +1,7 @@
 package net.trilleo.mc.plugins.tribingo.registration
 
-import net.trilleo.mc.plugins.tribingo.enums.FillMode
 import net.kyori.adventure.text.Component
+import net.trilleo.mc.plugins.tribingo.enums.FillMode
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent

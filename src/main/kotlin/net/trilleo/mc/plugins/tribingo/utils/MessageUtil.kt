@@ -1,8 +1,8 @@
 package net.trilleo.mc.plugins.tribingo.utils
 
-import net.trilleo.mc.plugins.tribingo.utils.MessageUtil.init
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
+import net.trilleo.mc.plugins.tribingo.utils.MessageUtil.init
 import org.bukkit.entity.Player
 
 /**

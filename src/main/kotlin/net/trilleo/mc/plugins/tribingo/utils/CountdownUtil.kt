@@ -1,10 +1,10 @@
 package net.trilleo.mc.plugins.tribingo.utils
 
-import net.trilleo.mc.plugins.tribingo.enums.DisplayLocation
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.title.Title
+import net.trilleo.mc.plugins.tribingo.enums.DisplayLocation
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import java.time.Duration

@@ -1,9 +1,9 @@
 package net.trilleo.mc.plugins.tribingo.data
 
-import net.trilleo.mc.plugins.tribingo.data.PlayerDataManager.get
-import net.trilleo.mc.plugins.tribingo.data.PlayerDataManager.init
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
+import net.trilleo.mc.plugins.tribingo.data.PlayerDataManager.get
+import net.trilleo.mc.plugins.tribingo.data.PlayerDataManager.init
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener

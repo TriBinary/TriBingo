@@ -1,9 +1,9 @@
 package net.trilleo.mc.plugins.tribingo.data
 
-import net.trilleo.mc.plugins.tribingo.data.ServerDataManager.get
-import net.trilleo.mc.plugins.tribingo.data.ServerDataManager.init
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
+import net.trilleo.mc.plugins.tribingo.data.ServerDataManager.get
+import net.trilleo.mc.plugins.tribingo.data.ServerDataManager.init
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import java.util.logging.Logger

@@ -1,11 +1,11 @@
 package net.trilleo.mc.plugins.tribingo.registration
 
-import net.trilleo.mc.plugins.tribingo.enums.FillMode
-import net.trilleo.mc.plugins.tribingo.enums.PagedGUIMode
-import net.trilleo.mc.plugins.tribingo.utils.itemStack
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
+import net.trilleo.mc.plugins.tribingo.enums.FillMode
+import net.trilleo.mc.plugins.tribingo.enums.PagedGUIMode
+import net.trilleo.mc.plugins.tribingo.utils.itemStack
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent

@@ -1,10 +1,10 @@
 package net.trilleo.mc.plugins.tribingo.commands.info
 
-import net.trilleo.mc.plugins.tribingo.registration.CommandRegistrar
-import net.trilleo.mc.plugins.tribingo.registration.PluginCommand
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
+import net.trilleo.mc.plugins.tribingo.registration.CommandRegistrar
+import net.trilleo.mc.plugins.tribingo.registration.PluginCommand
 import org.bukkit.command.CommandSender
 
 class HelpCommand : PluginCommand(
