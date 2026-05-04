@@ -181,7 +181,7 @@ class ReloadCommand(private val plugin: JavaPlugin) : PluginCommand(
     permission = "tribingo.reload"
 ) {
     override fun execute(sender: CommandSender, args: Array<out String>): Boolean {
-        val main = plugin as? net.trilleo.mc.plugins.trihunt.Main
+        val main = plugin as? net.trilleo.mc.plugins.tribingo.Main
         if (main == null) {
             sender.sendMessage("Error: Plugin instance type mismatch. Unable to reload configuration.")
             return true
