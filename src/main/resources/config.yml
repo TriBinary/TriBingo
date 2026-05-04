@@ -1,4 +1,4 @@
 # TriBingo Configuration
 
 # A friendly prefix shown before plugin messages
-message-prefix: "[TriBingo]"
+message-prefix: "<click:suggest_command:/tribingo><gradient:yellow:gold>[TriBingo]"
