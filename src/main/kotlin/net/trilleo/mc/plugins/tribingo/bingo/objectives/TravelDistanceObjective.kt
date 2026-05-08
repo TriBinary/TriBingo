@@ -35,7 +35,7 @@ class TravelDistanceObjective(
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onMove(event: PlayerMoveEvent) {
-        if (!event.hasMovedBlock()) return
+        if (!event.hasChangedBlock()) return
         val game = BingoManager.currentGame ?: return
         if (game.state != GameState.ACTIVE) return
         val state = game.getOrCreateState(event.player.uniqueId)
