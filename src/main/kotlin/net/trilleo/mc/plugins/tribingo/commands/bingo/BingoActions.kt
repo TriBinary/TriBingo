@@ -5,7 +5,6 @@ import net.trilleo.mc.plugins.tribingo.commands.bingo.BingoActions.resetGame
 import net.trilleo.mc.plugins.tribingo.enums.GameState
 import net.trilleo.mc.plugins.tribingo.registration.GUIManager
 import org.bukkit.entity.Player
-
 /**
  * Encapsulates all Bingo game management actions so they can be invoked from
  * both [BingoCommand] and future GUI implementations without duplicating logic.
@@ -151,8 +150,65 @@ object BingoActions {
             "<gray>Board size: <white>${game.board.size}×${game.board.size}",
             "<gray>State: <white>${game.state}",
             "<gray>Objectives loaded: <white>${game.board.cells.size}",
-            "<gray>Active players: <white>${game.playerStates.size}"
+            "<gray>Active players: <white>${game.playerStates.size}",
+            "<gray>Timer: <white>${formatSeconds(BingoManager.getTimerSeconds())}"
         )
         return ActionResult(true, lines.joinToString("\n"))
+    }
+
+    // ── Timer ─────────────────────────────────────────────────────────────
+
+    /**
+     * Sets the countdown duration that will be used when the next game starts.
+     *
+     * The game must not currently be [GameState.ACTIVE]; the timer cannot be
+     * changed mid-game.
+     *
+     * @param hours   hours component (0–23)
+     * @param minutes minutes component (0–59)
+     * @param seconds seconds component (0–59)
+     * @return [ActionResult] indicating success or the reason for failure
+     */
+    fun setTimer(hours: Int, minutes: Int, seconds: Int): ActionResult {
+        if (hours < 0 || minutes < 0 || seconds < 0) {
+            return ActionResult(false, "<red>Time values must not be negative.")
+        }
+        val totalSeconds = hours * 3600 + minutes * 60 + seconds
+        if (totalSeconds <= 0) {
+            return ActionResult(false, "<red>Timer must be greater than 0 seconds.")
+        }
+        if (totalSeconds > 86_400) {
+            return ActionResult(false, "<red>Timer cannot exceed 24 hours (86 400 seconds).")
+        }
+        if (BingoManager.isGameActive()) {
+            return ActionResult(false, "<red>Cannot change the timer while a game is active.")
+        }
+        val result = runCatching { BingoManager.setTimerSeconds(totalSeconds) }
+        return if (result.isSuccess) {
+            ActionResult(true, "<green>Timer set to ${formatSeconds(hours, minutes, seconds)}.")
+        } else {
+            ActionResult(false, "<red>Failed to set timer: ${result.exceptionOrNull()?.message ?: "unknown error"}")
+        }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+
+    /**
+     * Formats a duration given as [h]/[m]/[s] components as `HH:MM:SS`
+     * (hours component omitted when zero).
+     */
+    private fun formatSeconds(h: Int, m: Int, s: Int): String =
+        if (h > 0) String.format("%02d:%02d:%02d", h, m, s)
+        else String.format("%02d:%02d", m, s)
+
+    /**
+     * Formats a total [totalSeconds] value as `HH:MM:SS`
+     * (hours component omitted when zero).
+     */
+    private fun formatSeconds(totalSeconds: Int): String {
+        val h = totalSeconds / 3600
+        val m = (totalSeconds % 3600) / 60
+        val s = totalSeconds % 60
+        return formatSeconds(h, m, s)
     }
 }

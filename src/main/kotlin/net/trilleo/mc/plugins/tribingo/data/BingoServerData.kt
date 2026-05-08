@@ -27,6 +27,7 @@ import java.util.*
  * | `bingo_game_state`         | String        | Serialised [GameState] name              |
  * | `bingo_board_layout`       | JsonArray     | Objective IDs in cell order              |
  * | `bingo_player_states`      | JsonObject    | Per-player completion/progress/points data |
+ * | `bingo_timer_seconds`      | Int           | Countdown duration in seconds (default 3600) |
  */
 class BingoServerData : ServerData() {
 
@@ -35,6 +36,8 @@ class BingoServerData : ServerData() {
         private const val KEY_GAME_STATE = "bingo_game_state"
         private const val KEY_BOARD_LAYOUT = "bingo_board_layout"
         private const val KEY_PLAYER_STATES = "bingo_player_states"
+        private const val KEY_TIMER_SECONDS = "bingo_timer_seconds"
+        const val DEFAULT_TIMER_SECONDS = 3600
     }
 
     /**
@@ -53,6 +56,16 @@ class BingoServerData : ServerData() {
     )
 
     // ── Typed properties ─────────────────────────────────────────────────
+
+    /**
+     * Countdown duration in seconds used when a new game starts.
+     *
+     * Defaults to [DEFAULT_TIMER_SECONDS] (3 600 s = 1 hour) when not yet set.
+     * Must be a positive value (validated by the command layer before writing).
+     */
+    var timerSeconds: Int
+        get() = getInt(KEY_TIMER_SECONDS, DEFAULT_TIMER_SECONDS)
+        set(value) = set(KEY_TIMER_SECONDS, value)
 
     /** Side-length of the persisted board; `0` means no game has been saved yet. */
     var boardSize: Int

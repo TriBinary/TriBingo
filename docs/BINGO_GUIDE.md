@@ -29,8 +29,9 @@ extend, or maintain the system.
     - [BingoServerData](#bingoserverdata)
 8. [Configuration](#configuration)
 9. [Commands](#commands)
-10. [Board GUI](#board-gui)
-11. [Writing a Custom Objective](#writing-a-custom-objective)
+10. [Countdown](#countdown)
+11. [Board GUI](#board-gui)
+12. [Writing a Custom Objective](#writing-a-custom-objective)
 
 ---
 
@@ -142,13 +143,15 @@ The singleton facade for the entire Bingo system. All gameplay operations flow t
 | Method                               | Description                                                                                     |
 |:-------------------------------------|:------------------------------------------------------------------------------------------------|
 | `init(plugin)`                       | Stores the plugin reference and rehydrates or creates a default game on startup                 |
-| `save()`                             | Serialises the current game into `BingoServerData` for disk persistence                         |
+| `save()`                             | Serialises the current game into `BingoServerData` for disk persistence; clears data if ACTIVE  |
 | `newGame(size: Int): BingoGame`      | Creates a new game with randomly selected objectives; size must be `3..6`                       |
-| `startGame()`                        | Transitions the current game from `INACTIVE` → `ACTIVE`                                         |
-| `stopGame()`                         | Ends the current `ACTIVE` game without a winner                                                 |
+| `startGame()`                        | Transitions the current game from `INACTIVE` → `ACTIVE`; starts the countdown                  |
+| `stopGame()`                         | Ends the current `ACTIVE` game without a winner; cancels the countdown                          |
 | `resetGame()`                        | Resets all player progress and returns the game to `INACTIVE`                                   |
 | `refreshBoard()`                     | Picks a new random set of objectives (game must be `INACTIVE`)                                  |
 | `setBoardSize(size: Int)`            | Changes the board size; refreshes if the same size and `INACTIVE`, otherwise creates a new game |
+| `getTimerSeconds(): Int`             | Returns the configured countdown duration in seconds (default 3 600)                            |
+| `setTimerSeconds(seconds: Int)`      | Persists the countdown duration; must be in `1..86_400`                                         |
 | `checkCompletion(player, objective)` | Called by event objectives to mark a cell complete and check the win condition                  |
 | `isGameActive(): Boolean`            | Returns `true` if the current game is in `ACTIVE` state                                         |
 | `currentGame: BingoGame?`            | The currently active (or most-recently-created) game; `null` if none exists                     |
@@ -473,6 +476,7 @@ Extends `ServerData` to persist the active game to `serverdata.json` via `Server
 | `boardSize`                                | `bingo_board_size`    | `Int`        | Side-length of the persisted board; `0` = no game   |
 | `gameStateName`                            | `bingo_game_state`    | `String`     | Serialised `GameState` name                         |
 | `boardLayout`                              | `bingo_board_layout`  | `JsonArray`  | Ordered list of objective IDs (size × size entries) |
+| `timerSeconds`                             | `bingo_timer_seconds` | `Int`        | Countdown duration in seconds; default `3600`       |
 | `savePlayerStates(states)`                 | `bingo_player_states` | `JsonObject` | Serialises all player states                        |
 | `loadPlayerStates(): Map<UUID, Pair<...>>` | `bingo_player_states` | `JsonObject` | Deserialises previously saved player states         |
 | `clearGameData()`                          | —                     | —            | Removes all bingo keys from the backing JSON        |
@@ -528,17 +532,54 @@ Bingo commands are available as the standalone `/bingo` command, dispatched thro
 
 ### `/bingo <sub-command>`
 
-| Sub-command  | Permission              | Who can use | Description                                                                            |
-|:-------------|:------------------------|:------------|:---------------------------------------------------------------------------------------|
-| `board`      | *(none)*                | Players     | Opens the `BingoBoardGUI` for the sender                                               |
-| `start`      | `tribingo.bingo.manage` | Any sender  | Starts the current game (must be `INACTIVE`)                                           |
-| `stop`       | `tribingo.bingo.manage` | Any sender  | Ends the current game without a winner (must be `ACTIVE`)                              |
-| `reset`      | `tribingo.bingo.manage` | Any sender  | Resets all player progress; transitions game back to `INACTIVE`                        |
-| `refresh`    | `tribingo.bingo.manage` | Any sender  | Picks new random objectives for the current board (must be `INACTIVE`)                 |
-| `size <3-6>` | `tribingo.bingo.manage` | Any sender  | Sets the board size; refreshes if same size and `INACTIVE`, creates new game otherwise |
-| `status`     | *(none)*                | Any sender  | Shows board size, game state, number of objectives, and active players                 |
+| Sub-command              | Permission              | Who can use | Description                                                                            |
+|:-------------------------|:------------------------|:------------|:---------------------------------------------------------------------------------------|
+| `board`                  | *(none)*                | Players     | Opens the `BingoBoardGUI` for the sender                                               |
+| `start`                  | `tribingo.bingo.manage` | Any sender  | Starts the current game (must be `INACTIVE`); also starts the countdown               |
+| `stop`                   | `tribingo.bingo.manage` | Any sender  | Ends the current game without a winner (must be `ACTIVE`); cancels the countdown      |
+| `reset`                  | `tribingo.bingo.manage` | Any sender  | Resets all player progress; transitions game back to `INACTIVE`                        |
+| `refresh`                | `tribingo.bingo.manage` | Any sender  | Picks new random objectives for the current board (must be `INACTIVE`)                 |
+| `time <h> <m> <s>`       | `tribingo.bingo.manage` | Any sender  | Sets the countdown duration (hours, minutes, seconds); stored in server data           |
+| `status`                 | *(none)*                | Any sender  | Shows board size, game state, number of objectives, active players, and timer setting  |
 
-Tab-completion is supported: typing `/bingo ` shows all sub-commands; typing `/bingo size ` shows `3 4 5 6`.
+Tab-completion is supported: typing `/bingo ` shows all sub-commands; typing `/bingo time ` shows example values.
+
+---
+
+## Countdown
+
+When a game starts (via `/bingo start`), a server-wide countdown begins. The remaining time is sent to
+**every online player** as an action bar message once per second in the format `⏱ Bingo: MM:SS` (or
+`HH:MM:SS` when hours remain). Players who join mid-game will see the countdown on the next tick.
+
+### Timer setting
+
+The countdown duration is stored in `serverdata.json` under the key `bingo_timer_seconds` and defaults to
+**3 600 seconds (1 hour)**. Change it with:
+
+```
+/bingo time <hours> <minutes> <seconds>
+```
+
+For example, `/bingo time 0 30 0` sets the timer to 30 minutes. The setting persists across server restarts
+and cannot be changed while a game is active.
+
+### Timer expiry
+
+When the countdown reaches zero, `BingoManager.onTimerExpired` is called:
+
+1. The player with the **highest point total** across all recorded `BingoPlayerState`s is declared winner.
+2. If multiple players have the same top score, the first one returned by the state map is used.
+3. If no player has accumulated any points, the game ends without a winner.
+
+The winner broadcast uses `BingoGame.end(winner, winnerPoints, winnerName)`. The `winnerName` fallback
+ensures the announcement works even when the top scorer is offline at the moment the timer expires.
+
+### Server stop during active game
+
+If the server is stopped while a game is `ACTIVE`, `BingoManager.save()` clears the game data rather than
+persisting the interrupted state. On the next server start, `BingoManager.init` creates a fresh `INACTIVE`
+game instead of rehydrating the stale one.
 
 ---
 
