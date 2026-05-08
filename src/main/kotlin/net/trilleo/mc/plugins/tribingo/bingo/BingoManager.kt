@@ -505,6 +505,10 @@ object BingoManager {
             saved.progressData.forEach { (k, v) -> ps.setProgress(k, v) }
             saved.completedLines.forEach { ps.completedLines.add(it) }
             ps.points = saved.points
+            saved.stringData.forEach { (k, v) -> ps.stringData[k] = v }
+            saved.stepData.forEach { (objectiveId, steps) ->
+                steps.forEach { ps.addStep(objectiveId, it) }
+            }
         }
 
         currentGame = game

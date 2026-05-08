@@ -24,6 +24,7 @@ wire anything up.
 | Configuration | `PluginConfig`            | `net.trilleo.mc.plugins.trihunt.config`    |
 | Player Data   | `PlayerData`              | `net.trilleo.mc.plugins.trihunt.data`      |
 | Server Data   | `ServerData`              | `net.trilleo.mc.plugins.trihunt.data`      |
+| Code Objectives | `BingoObjective` + `@CustomObjective` | `net.trilleo.mc.plugins.tribingo.bingo.custom` |
 
 Subpackages are also scanned, so you can freely organize classes into folders like `commands/game/`,
 `listeners/player/`, or `guis/menus/`.
@@ -1759,3 +1760,73 @@ class StatsCommand : PluginCommand(
     }
 }
 ```
+
+---
+
+## Code Objectives (Bingo)
+
+Code objectives let you implement Bingo cells entirely in Kotlin, with full access to Bukkit events,
+multi-step state, and sequential logic that cannot be expressed in `bingo_objectives.yml`.
+
+### Key Types
+
+| Type / Annotation            | Package                                                | Purpose                                                            |
+|:-----------------------------|:-------------------------------------------------------|:-------------------------------------------------------------------|
+| `@CustomObjective`           | `net.trilleo.mc.plugins.tribingo.bingo.annotation`     | Marks a class for auto-discovery by `CodeObjectiveLoader`          |
+| `BingoObjectiveFactory`      | `net.trilleo.mc.plugins.tribingo.bingo`                | Companion-object interface for parameterised construction           |
+| `MultiEventBingoObjective`   | `net.trilleo.mc.plugins.tribingo.bingo`                | Base class for objectives listening to multiple event types         |
+| `SequentialBingoObjective`   | `net.trilleo.mc.plugins.tribingo.bingo`                | Base class for objectives requiring an ordered sequence of steps    |
+| `CodeObjectiveLoader`        | `net.trilleo.mc.plugins.tribingo.bingo.registry`       | Scans designated packages and registers annotated objectives        |
+
+### Designated Package
+
+Place code objectives in `net.trilleo.mc.plugins.tribingo.bingo.custom`. The loader scans this package
+automatically at startup. No edits to `Main.kt` or any registration call are needed — just annotate the
+class with `@CustomObjective`.
+
+### Quick Example
+
+```kotlin
+package net.trilleo.mc.plugins.tribingo.bingo.custom
+
+import net.kyori.adventure.text.Component
+import net.trilleo.mc.plugins.tribingo.bingo.BingoManager
+import net.trilleo.mc.plugins.tribingo.bingo.BingoPlayerState
+import net.trilleo.mc.plugins.tribingo.bingo.EventBingoObjective
+import net.trilleo.mc.plugins.tribingo.bingo.annotation.CustomObjective
+import net.trilleo.mc.plugins.tribingo.enums.Difficulty
+import net.trilleo.mc.plugins.tribingo.enums.GameState
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
+import org.bukkit.event.player.PlayerBedEnterEvent
+
+@CustomObjective
+class SleepObjective : EventBingoObjective<PlayerBedEnterEvent>(
+    id          = "sleep_in_bed",
+    name        = Component.text("Good Night"),
+    description = Component.text("Sleep in a bed."),
+    difficulty  = Difficulty.EASY,
+    eventClass  = PlayerBedEnterEvent::class.java
+) {
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onBedEnter(event: PlayerBedEnterEvent) {
+        if (event.bedEnterResult != PlayerBedEnterEvent.BedEnterResult.OK) return
+        val game = BingoManager.currentGame ?: return
+        if (game.state != GameState.ACTIVE) return
+        onEvent(event, event.player, game.getOrCreateState(event.player.uniqueId))
+    }
+
+    override fun onEvent(event: PlayerBedEnterEvent, player: Player, state: BingoPlayerState) {
+        BingoManager.checkCompletion(player, this)
+    }
+
+    override fun isCompletedBy(player: Player, state: BingoPlayerState): Boolean =
+        state.isCompleted(
+            BingoManager.currentGame?.board?.cells?.find { it.objective.id == id }?.cellIndex ?: return false
+        )
+}
+```
+
+For full documentation, worked examples, and the extended per-player state API (`stringData`, `stepData`),
+see `BINGO_GUIDE.md` → **Writing a Code Objective**.

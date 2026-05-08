@@ -20,9 +20,12 @@ extend, or maintain the system.
 5. [Objectives](#objectives)
     - [BingoObjective](#bingoobjective)
     - [EventBingoObjective](#eventbingoobjective)
+    - [MultiEventBingoObjective](#multieventbingoobjective)
+    - [SequentialBingoObjective](#sequentialbingoobjective)
     - [Built-in Objective Types](#built-in-objective-types)
 6. [Registry & Loading](#registry--loading)
     - [BingoObjectiveRegistry](#bingoobjectiveregistry)
+    - [CodeObjectiveLoader](#codeobjectiveloader)
     - [YamlObjectiveLoader](#yamlobjectiveloader)
     - [bingo_objectives.yml Format](#bingo_objectivesyml-format)
 7. [Persistence](#persistence)
@@ -32,6 +35,7 @@ extend, or maintain the system.
 10. [Countdown](#countdown)
 11. [Board GUI](#board-gui)
 12. [Writing a Custom Objective](#writing-a-custom-objective)
+13. [Writing a Code Objective](#writing-a-code-objective)
 
 ---
 
@@ -337,6 +341,60 @@ class MyObjective : EventBingoObjective<SomeBukkitEvent>(
 
 ---
 
+### MultiEventBingoObjective
+
+**Package:** `net.trilleo.mc.plugins.tribingo.bingo`
+
+Abstract subclass of `BingoObjective` that also implements Bukkit's `Listener`. Use this when an objective
+must listen to **more than one Bukkit event type** simultaneously (e.g. tracking which weapon last hit an
+entity on `EntityDamageByEntityEvent`, then detecting the kill on `EntityDeathEvent`).
+
+Unlike `EventBingoObjective<T>`, this class has no generic parameter — add as many `@EventHandler`-annotated
+methods as needed. The registry registers every `MultiEventBingoObjective` as a Bukkit event listener
+automatically.
+
+```kotlin
+@CustomObjective
+class MyMultiEventObjective : MultiEventBingoObjective(
+    id = "my_multi", name = ..., description = ..., difficulty = ...
+) {
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onFirstEvent(event: FirstEvent) { ... }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onSecondEvent(event: SecondEvent) { ... }
+
+    override fun isCompletedBy(player: Player, state: BingoPlayerState): Boolean = ...
+}
+```
+
+---
+
+### SequentialBingoObjective
+
+**Package:** `net.trilleo.mc.plugins.tribingo.bingo`
+
+A helper base class for objectives that require a fixed sequence of named steps to be completed
+**in order**. Extends `BingoObjective` and implements `Listener`.
+
+Declare the ordered step tokens in the `steps` constructor parameter.  From within `@EventHandler` methods,
+call `advanceStep(state, step)` — the method records the step only if it is the next expected one and
+returns `true` when the final step is reached (signal to call `BingoManager.checkCompletion`). Call
+`hasStep(state, step)` to guard handlers that should only fire after a prior step is complete.
+
+`isCompletedBy` and `onReset` are already implemented by this class; do not override them unless you need
+additional behaviour.
+
+| Method / Property                              | Description                                                                             |
+|:-----------------------------------------------|:----------------------------------------------------------------------------------------|
+| `steps: List<String>`                          | Ordered list of step tokens that must be completed in sequence                          |
+| `advanceStep(state, step): Boolean`            | Records `step` if it is the expected next step; returns `true` when sequence is complete |
+| `hasStep(state, step): Boolean`                | Returns `true` when `step` has already been recorded                                    |
+| `isCompletedBy(player, state): Boolean`        | Implemented; returns `true` when all steps are recorded                                 |
+| `onReset(player, state)`                       | Implemented; clears the step set from `state.stepData`                                  |
+
+---
+
 ### Built-in Objective Types
 
 All built-in implementations live in `net.trilleo.mc.plugins.tribingo.bingo.objectives`.
@@ -366,15 +424,36 @@ All built-in objectives listen at `EventPriority.MONITOR` with `ignoreCancelled 
 
 In-memory registry of all available `BingoObjective` instances. Objectives are stored in insertion order.
 
-| Method                                              | Description                                                                                                                      |
-|:----------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
-| `init(plugin)`                                      | Stores the plugin reference; must be called before `register`                                                                    |
-| `register(objective)`                               | Adds the objective to the registry; auto-registers `EventBingoObjective` as a listener; duplicate IDs are skipped with a warning |
-| `unregister(id)`                                    | Removes an objective by ID (listener remains active but is a no-op while the game is inactive)                                   |
-| `getAll(): List<BingoObjective>`                    | Returns all registered objectives in insertion order                                                                             |
-| `getByDifficulty(difficulty): List<BingoObjective>` | Returns objectives filtered by `Difficulty`                                                                                      |
-| `get(id): BingoObjective?`                          | Returns the objective with the given ID, or `null`                                                                               |
-| `clear()`                                           | Removes all objectives; intended for tests or full plugin reloads                                                                |
+| Method                                              | Description                                                                                                                     |
+|:----------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| `init(plugin)`                                      | Stores the plugin reference; must be called before `register`                                                                   |
+| `register(objective)`                               | Adds the objective to the registry; auto-registers any `Listener` implementation as a Bukkit listener; duplicate IDs are skipped with a warning |
+| `unregister(id)`                                    | Removes an objective by ID (listener remains active but is a no-op while the game is inactive)                                  |
+| `getAll(): List<BingoObjective>`                    | Returns all registered objectives in insertion order                                                                            |
+| `getByDifficulty(difficulty): List<BingoObjective>` | Returns objectives filtered by `Difficulty`                                                                                     |
+| `get(id): BingoObjective?`                          | Returns the objective with the given ID, or `null`                                                                              |
+| `clear()`                                           | Removes all objectives; intended for tests or full plugin reloads                                                               |
+
+---
+
+### CodeObjectiveLoader
+
+**Package:** `net.trilleo.mc.plugins.tribingo.bingo.registry`
+
+Discovers and registers code objectives — concrete `BingoObjective` subclasses
+annotated with `@CustomObjective` — from one or more designated packages.
+
+| Method                                   | Description                                                                                    |
+|:-----------------------------------------|:-----------------------------------------------------------------------------------------------|
+| `load(plugin, registry, vararg packages)` | Scans the given packages, instantiates annotated classes, and registers them with `registry`  |
+
+The default package scanned by `Main.onEnable` is
+`net.trilleo.mc.plugins.tribingo.bingo.custom`. For each class the loader
+tries a companion `BingoObjectiveFactory` first, then a no-arg constructor.
+Classes that satisfy neither are skipped with a warning.
+
+See [Writing a Code Objective](#writing-a-code-objective) for full usage
+documentation and worked examples.
 
 ---
 
@@ -695,6 +774,394 @@ YamlObjectiveLoader.registerTypeHandler("sleep_in_bed") { entry ->
         difficulty = Difficulty.valueOf((entry["difficulty"] as? String ?: "EASY").uppercase())
     )
 }
+```
+
+---
+
+## Writing a Code Objective
+
+Code objectives are Kotlin classes that live inside the plugin JAR and are
+discovered automatically at startup. They behave identically to YAML-loaded
+objectives from the perspective of the board, the GUI, and the persistence
+layer — the only difference is that their completion logic is written in
+Kotlin rather than configured in `bingo_objectives.yml`.
+
+Use code objectives when you need behaviour that YAML types cannot express:
+tracking which weapon was used, enforcing an ordered sequence of actions,
+listening to multiple event types at once, or maintaining complex per-player
+state.
+
+---
+
+### Quick-start
+
+1. Choose the right base class (see the table in the next section).
+2. Annotate the class with `@CustomObjective`.
+3. Place the class in `net.trilleo.mc.plugins.tribingo.bingo.custom` (or any
+   additional package you pass to `CodeObjectiveLoader.load`).
+4. Provide a no-arg constructor **or** a companion object that implements
+   `BingoObjectiveFactory`.
+
+That's it — `CodeObjectiveLoader` registers the objective automatically,
+including Bukkit event listener registration if applicable.
+
+---
+
+### Choosing a Base Class
+
+| Base class                  | When to use                                                                                         |
+|:----------------------------|:----------------------------------------------------------------------------------------------------|
+| `BingoObjective`            | Snapshot-based check (e.g. "player currently has ≥ 20 hearts"). No events needed.                  |
+| `EventBingoObjective<T>`    | Reacts to exactly one Bukkit event type. The generic parameter `T` is the event class.              |
+| `MultiEventBingoObjective`  | Reacts to multiple Bukkit event types. Add as many `@EventHandler` methods as needed.               |
+| `SequentialBingoObjective`  | Must be completed by performing a fixed sequence of named steps in the correct order.               |
+
+All event-driven classes (`EventBingoObjective`, `MultiEventBingoObjective`,
+`SequentialBingoObjective`) implement Bukkit's `Listener`. The registry
+registers them as event listeners automatically.
+
+---
+
+### The `@CustomObjective` Annotation
+
+`@CustomObjective` (in `net.trilleo.mc.plugins.tribingo.bingo.annotation`)
+marks a concrete `BingoObjective` subclass for auto-discovery by
+`CodeObjectiveLoader`. Classes without this annotation are ignored even if
+they are in the scanned package.
+
+```kotlin
+import net.trilleo.mc.plugins.tribingo.bingo.annotation.CustomObjective
+
+@CustomObjective
+class MySleepObjective : EventBingoObjective<PlayerBedEnterEvent>(...) { ... }
+```
+
+---
+
+### Construction Strategies
+
+`CodeObjectiveLoader` instantiates each annotated class using one of two
+strategies (companion factory is tried first):
+
+#### 1 — No-arg constructor (recommended for simple objectives)
+
+Hardcode all parameters in the class body:
+
+```kotlin
+@CustomObjective
+class SleepObjective : EventBingoObjective<PlayerBedEnterEvent>(
+    id          = "sleep_in_bed",
+    name        = Component.text("Good Night"),
+    description = Component.text("Sleep in a bed."),
+    difficulty  = Difficulty.EASY,
+    eventClass  = PlayerBedEnterEvent::class.java
+) {
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onBedEnter(event: PlayerBedEnterEvent) {
+        if (event.bedEnterResult != PlayerBedEnterEvent.BedEnterResult.OK) return
+        val game = BingoManager.currentGame ?: return
+        if (game.state != GameState.ACTIVE) return
+        onEvent(event, event.player, game.getOrCreateState(event.player.uniqueId))
+    }
+
+    override fun onEvent(event: PlayerBedEnterEvent, player: Player, state: BingoPlayerState) {
+        BingoManager.checkCompletion(player, this)
+    }
+
+    override fun isCompletedBy(player: Player, state: BingoPlayerState): Boolean =
+        state.isCompleted(
+            BingoManager.currentGame?.board?.cells?.find { it.objective.id == id }?.cellIndex ?: return false
+        )
+}
+```
+
+#### 2 — Companion factory (`BingoObjectiveFactory`)
+
+Use a companion object implementing `BingoObjectiveFactory` when the
+objective needs construction-time parameters that cannot be hardcoded (e.g.
+a `Material` constant, a count from a config value, or a reference to
+another service):
+
+```kotlin
+@CustomObjective
+class KillWithDiamondSwordObjective(
+    private val requiredMaterial: Material
+) : MultiEventBingoObjective(
+    id          = "kill_zombie_diamond_sword",
+    name        = Component.text("Diamond Slayer"),
+    description = Component.text("Kill a zombie with a diamond sword."),
+    difficulty  = Difficulty.MEDIUM
+) {
+    companion object : BingoObjectiveFactory {
+        override fun create() = KillWithDiamondSwordObjective(Material.DIAMOND_SWORD)
+    }
+    // ... @EventHandler methods
+}
+```
+
+---
+
+### Extended Per-Player State
+
+Beyond the integer `progressData` map inherited from `BingoObjective`,
+`BingoPlayerState` exposes two additional state stores for code objectives:
+
+#### `stringData` — arbitrary string values
+
+Keyed by a compound `"objectiveId:fieldName"` string. Use the typed accessors
+rather than accessing the map directly.
+
+| Method                                    | Description                                             |
+|:------------------------------------------|:--------------------------------------------------------|
+| `getString(objectiveId, field): String?`  | Returns the stored value, or `null` if absent           |
+| `setString(objectiveId, field, value)`    | Stores a string value                                   |
+| `removeString(objectiveId, field)`        | Removes a stored value                                  |
+
+#### `stepData` — ordered sets of completed step tokens
+
+Keyed by `objectiveId`. Each set is a `LinkedHashSet` that preserves
+insertion order, making it suitable for sequential objectives.
+
+| Method                                         | Description                                                                  |
+|:-----------------------------------------------|:-----------------------------------------------------------------------------|
+| `getSteps(objectiveId): MutableSet<String>`    | Returns the live step set (creates an empty one on first call)               |
+| `addStep(objectiveId, step): Boolean`          | Adds a step; returns `true` if it was new, `false` if already present        |
+| `hasStep(objectiveId, step): Boolean`          | Returns `true` when the step has already been recorded                       |
+| `clearSteps(objectiveId)`                      | Removes all steps for the objective (call from `onReset`)                    |
+
+All three stores (`progressData`, `stringData`, `stepData`) are serialised
+to `serverdata.json` and rehydrated on server restart, so progress survives
+restarts.
+
+---
+
+### Worked Examples
+
+#### Example 1 — Kill a zombie with a sword (`MultiEventBingoObjective`)
+
+This objective must track two events: a damage event (to record which weapon
+hit the zombie last) and a death event (to check whether that weapon was a
+sword).
+
+```kotlin
+package net.trilleo.mc.plugins.tribingo.bingo.custom
+
+import net.kyori.adventure.text.Component
+import net.trilleo.mc.plugins.tribingo.bingo.BingoManager
+import net.trilleo.mc.plugins.tribingo.bingo.BingoPlayerState
+import net.trilleo.mc.plugins.tribingo.bingo.MultiEventBingoObjective
+import net.trilleo.mc.plugins.tribingo.bingo.annotation.CustomObjective
+import net.trilleo.mc.plugins.tribingo.enums.Difficulty
+import net.trilleo.mc.plugins.tribingo.enums.GameState
+import org.bukkit.entity.EntityType
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
+import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.entity.EntityDeathEvent
+import java.util.UUID
+
+@CustomObjective
+class KillZombieWithSwordObjective : MultiEventBingoObjective(
+    id          = "kill_zombie_with_sword",
+    name        = Component.text("Undead Swordsman"),
+    description = Component.text("Kill a zombie using any sword."),
+    difficulty  = Difficulty.MEDIUM
+) {
+    // Tracks whether the last hit on a given entity was with a sword
+    private val lastHitWithSword = mutableSetOf<UUID>()
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onDamage(event: EntityDamageByEntityEvent) {
+        val player = event.damager as? Player ?: return
+        val entityId = event.entity.uniqueId
+        val weapon = player.inventory.itemInMainHand.type
+        if (weapon.name.endsWith("_SWORD")) {
+            lastHitWithSword.add(entityId)
+        } else {
+            lastHitWithSword.remove(entityId)
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onDeath(event: EntityDeathEvent) {
+        if (event.entity.type != EntityType.ZOMBIE) return
+        val player = event.entity.killer ?: return
+        if (!lastHitWithSword.remove(event.entity.uniqueId)) return
+        val game = BingoManager.currentGame ?: return
+        if (game.state != GameState.ACTIVE) return
+        val state = game.getOrCreateState(player.uniqueId)
+        state.setString(id, "done", "true")
+        BingoManager.checkCompletion(player, this)
+    }
+
+    override fun isCompletedBy(player: Player, state: BingoPlayerState): Boolean =
+        state.getString(id, "done") == "true"
+
+    override fun onReset(player: Player, state: BingoPlayerState) =
+        state.removeString(id, "done")
+}
+```
+
+---
+
+#### Example 2 — Deliver a pig to the Nether (`MultiEventBingoObjective`)
+
+This objective flags completion when a pig entity enters the Nether dimension.
+
+```kotlin
+package net.trilleo.mc.plugins.tribingo.bingo.custom
+
+import net.kyori.adventure.text.Component
+import net.trilleo.mc.plugins.tribingo.bingo.BingoManager
+import net.trilleo.mc.plugins.tribingo.bingo.BingoPlayerState
+import net.trilleo.mc.plugins.tribingo.bingo.MultiEventBingoObjective
+import net.trilleo.mc.plugins.tribingo.bingo.annotation.CustomObjective
+import net.trilleo.mc.plugins.tribingo.enums.Difficulty
+import net.trilleo.mc.plugins.tribingo.enums.GameState
+import org.bukkit.World
+import org.bukkit.entity.EntityType
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
+import org.bukkit.event.entity.EntityPortalEnterEvent
+
+@CustomObjective
+class DeliverPigToNetherObjective : MultiEventBingoObjective(
+    id          = "deliver_pig_nether",
+    name        = Component.text("Pork Express"),
+    description = Component.text("Push a pig through a Nether portal."),
+    difficulty  = Difficulty.HARD
+) {
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onPortalEnter(event: EntityPortalEnterEvent) {
+        if (event.entity.type != EntityType.PIG) return
+        // The event fires while the pig is still in its source dimension.
+        // Skip if the pig is already in the Nether (it would be returning to the
+        // Overworld, not going TO the Nether).
+        if (event.entity.world.environment == World.Environment.NETHER) return
+        val game = BingoManager.currentGame ?: return
+        if (game.state != GameState.ACTIVE) return
+        // Award the nearest online player within 10 blocks who is in the same world
+        val pig = event.entity
+        val nearbyPlayer = pig.world.getNearbyPlayers(pig.location, 10.0).firstOrNull() ?: return
+        val state = game.getOrCreateState(nearbyPlayer.uniqueId)
+        state.setString(id, "done", "true")
+        BingoManager.checkCompletion(nearbyPlayer, this)
+    }
+
+    override fun isCompletedBy(player: Player, state: BingoPlayerState): Boolean =
+        state.getString(id, "done") == "true"
+
+    override fun onReset(player: Player, state: BingoPlayerState) =
+        state.removeString(id, "done")
+}
+```
+
+---
+
+#### Example 3 — Craft a table, place it, craft again in order (`SequentialBingoObjective`)
+
+`SequentialBingoObjective` automatically handles the step-tracking and
+`isCompletedBy`/`onReset` implementations. You only need to add
+`@EventHandler` methods and call `advanceStep`.
+
+```kotlin
+package net.trilleo.mc.plugins.tribingo.bingo.custom
+
+import net.kyori.adventure.text.Component
+import net.trilleo.mc.plugins.tribingo.bingo.BingoManager
+import net.trilleo.mc.plugins.tribingo.bingo.BingoPlayerState
+import net.trilleo.mc.plugins.tribingo.bingo.SequentialBingoObjective
+import net.trilleo.mc.plugins.tribingo.bingo.annotation.CustomObjective
+import net.trilleo.mc.plugins.tribingo.enums.Difficulty
+import net.trilleo.mc.plugins.tribingo.enums.GameState
+import org.bukkit.Material
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
+import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.inventory.CraftItemEvent
+
+@CustomObjective
+class CraftPlaceCraftObjective : SequentialBingoObjective(
+    id          = "craft_place_craft",
+    name        = Component.text("Crafty Crafter"),
+    description = Component.text("Craft a crafting table, place it, then craft something on it."),
+    difficulty  = Difficulty.MEDIUM,
+    steps       = listOf("crafted_table", "placed_table", "crafted_on_table")
+) {
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onCraft(event: CraftItemEvent) {
+        val player = event.whoClicked as? Player ?: return
+        val game = BingoManager.currentGame ?: return
+        if (game.state != GameState.ACTIVE) return
+        val state = game.getOrCreateState(player.uniqueId)
+
+        when {
+            // Step 1: craft the table (only if not yet done)
+            event.recipe.result.type == Material.CRAFTING_TABLE && !hasStep(state, "crafted_table") ->
+                advanceStep(state, "crafted_table")
+
+            // Step 3: craft anything after placing the table
+            hasStep(state, "placed_table") ->
+                if (advanceStep(state, "crafted_on_table"))
+                    BingoManager.checkCompletion(player, this)
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onPlace(event: BlockPlaceEvent) {
+        if (event.blockPlaced.type != Material.CRAFTING_TABLE) return
+        val game = BingoManager.currentGame ?: return
+        if (game.state != GameState.ACTIVE) return
+        val state = game.getOrCreateState(event.player.uniqueId)
+        // Step 2: place the crafting table
+        advanceStep(state, "placed_table")
+    }
+}
+```
+
+---
+
+### Displaying Progress (`buildProgressItem`)
+
+Override `displayItem` and call `buildProgressItem` to add custom lore lines
+without duplicating the standard difficulty/description/completion layout:
+
+```kotlin
+override fun displayItem(player: Player, completed: Boolean): ItemStack {
+    val progress = BingoManager.currentGame
+        ?.getOrCreateState(player.uniqueId)?.getProgress(id) ?: 0
+    return buildProgressItem(
+        player, completed,
+        Component.text("Progress: $progress/$count", NamedTextColor.YELLOW)
+    )
+}
+```
+
+The helper renders:
+```
+Difficulty: <difficulty>
+
+<description>
+
+<progressLines>   ← shown only when not completed; falls back to "○ Not yet completed" when empty
+```
+When `completed` is `true` the progress lines are omitted and `"✓ Completed"` is shown instead.
+
+---
+
+### Scanning Additional Packages
+
+`CodeObjectiveLoader.load` accepts a `vararg packageNames` parameter. Specify
+additional packages in `Main.onEnable` if your objectives are spread across
+multiple locations:
+
+```kotlin
+CodeObjectiveLoader.load(this, BingoObjectiveRegistry,
+    "net.trilleo.mc.plugins.tribingo.bingo.custom",
+    "com.example.myplugin.objectives")
 ```
 
 ---

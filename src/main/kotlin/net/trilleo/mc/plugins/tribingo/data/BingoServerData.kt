@@ -48,12 +48,18 @@ class BingoServerData : ServerData() {
      * @param progressData    per-objective progress counters
      * @param completedLines  set of line keys that have received bonus points
      * @param points          accumulated point total
+     * @param stringData      arbitrary string values for code objectives,
+     *                        keyed by `"objectiveId:fieldName"`
+     * @param stepData        ordered step-token sets for sequential objectives,
+     *                        keyed by objective ID
      */
     data class PersistedPlayerState(
         val completedCells: Set<Int>,
         val progressData: Map<String, Int>,
         val completedLines: Set<String>,
-        val points: Int
+        val points: Int,
+        val stringData: Map<String, String> = emptyMap(),
+        val stepData: Map<String, Set<String>> = emptyMap()
     )
 
     // ── Typed properties ─────────────────────────────────────────────────
@@ -119,6 +125,23 @@ class BingoServerData : ServerData() {
 
             obj.addProperty("pts", ps.points)
 
+            // Extended state for code objectives
+            if (ps.stringData.isNotEmpty()) {
+                val sd = JsonObject()
+                ps.stringData.forEach { (k, v) -> sd.addProperty(k, v) }
+                obj.add("sd", sd)
+            }
+
+            if (ps.stepData.isNotEmpty()) {
+                val ssd = JsonObject()
+                ps.stepData.forEach { (objectiveId, steps) ->
+                    val arr = JsonArray()
+                    steps.forEach { arr.add(it) }
+                    ssd.add(objectiveId, arr)
+                }
+                obj.add("ssd", ssd)
+            }
+
             root.add(uuid.toString(), obj)
         }
         set(KEY_PLAYER_STATES, root)
@@ -155,7 +178,24 @@ class BingoServerData : ServerData() {
 
                 val points: Int = if (obj.has("pts")) obj.get("pts").asInt else 0
 
-                put(uuid, PersistedPlayerState(cells, progress, lines, points))
+                val stringData: Map<String, String> =
+                    if (obj.has("sd") && obj.get("sd").isJsonObject) {
+                        obj.getAsJsonObject("sd").entrySet()
+                            .associate { (k, v) -> k to v.asString }
+                    } else emptyMap()
+
+                val stepData: Map<String, Set<String>> =
+                    if (obj.has("ssd") && obj.get("ssd").isJsonObject) {
+                        obj.getAsJsonObject("ssd").entrySet().associate { (oid, el) ->
+                            oid to if (el.isJsonArray) {
+                                // Use LinkedHashSet to preserve the insertion order stored in the JSON
+                                // array; order matters for SequentialBingoObjective step tracking.
+                                el.asJsonArray.map { it.asString }.toCollection(LinkedHashSet())
+                            } else LinkedHashSet()
+                        }
+                    } else emptyMap()
+
+                put(uuid, PersistedPlayerState(cells, progress, lines, points, stringData, stepData))
             }
         }
     }

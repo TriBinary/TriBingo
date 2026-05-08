@@ -1,10 +1,10 @@
 package net.trilleo.mc.plugins.tribingo.bingo.registry
 
 import net.trilleo.mc.plugins.tribingo.bingo.BingoObjective
-import net.trilleo.mc.plugins.tribingo.bingo.EventBingoObjective
 import net.trilleo.mc.plugins.tribingo.bingo.registry.BingoObjectiveRegistry.init
 import net.trilleo.mc.plugins.tribingo.bingo.registry.BingoObjectiveRegistry.register
 import net.trilleo.mc.plugins.tribingo.enums.Difficulty
+import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 
 /**
@@ -17,8 +17,12 @@ import org.bukkit.plugin.java.JavaPlugin
  * ```
  *
  * ### Event-driven objectives
- * Any [EventBingoObjective] passed to [register] is automatically registered
- * as a Bukkit event listener, so no manual `registerEvents` call is needed.
+ * Any objective that implements Bukkit's [Listener] (e.g.
+ * [EventBingoObjective][net.trilleo.mc.plugins.tribingo.bingo.EventBingoObjective],
+ * [MultiEventBingoObjective][net.trilleo.mc.plugins.tribingo.bingo.MultiEventBingoObjective],
+ * or [SequentialBingoObjective][net.trilleo.mc.plugins.tribingo.bingo.SequentialBingoObjective])
+ * is automatically registered as a Bukkit event listener when [register] is
+ * called, so no manual `registerEvents` call is needed.
  *
  * ### Lifecycle
  * Call [init] once during plugin startup (before [register] is first invoked)
@@ -43,9 +47,13 @@ object BingoObjectiveRegistry {
     /**
      * Registers [objective] in the registry.
      *
-     * If [objective] is an [EventBingoObjective] it is also registered as a
-     * Bukkit event listener.  Duplicate IDs are silently ignored with a
-     * warning so that plugins can safely call this method multiple times.
+     * If [objective] implements Bukkit's [Listener] (which covers both
+     * [EventBingoObjective][net.trilleo.mc.plugins.tribingo.bingo.EventBingoObjective]
+     * and [MultiEventBingoObjective][net.trilleo.mc.plugins.tribingo.bingo.MultiEventBingoObjective]
+     * as well as any custom subclass that implements [Listener] directly), it
+     * is also registered as a Bukkit event listener.  Duplicate IDs are
+     * silently ignored with a warning so that plugins can safely call this
+     * method multiple times.
      *
      * @param objective the objective to register
      */
@@ -57,7 +65,7 @@ object BingoObjectiveRegistry {
             return
         }
         objectives[objective.id] = objective
-        if (objective is EventBingoObjective<*>) {
+        if (objective is Listener) {
             plugin.server.pluginManager.registerEvents(objective, plugin)
         }
         plugin.logger.fine("[BingoObjectiveRegistry] Registered objective: ${objective.id}")
@@ -66,7 +74,7 @@ object BingoObjectiveRegistry {
     /**
      * Removes the objective with [id] from the registry.
      *
-     * Note: if the objective was an [EventBingoObjective] its Bukkit event
+     * Note: if the objective implemented [Listener] its Bukkit event
      * listener registration cannot be undone at runtime; the objective will
      * simply be a no-op while the game is inactive.
      *

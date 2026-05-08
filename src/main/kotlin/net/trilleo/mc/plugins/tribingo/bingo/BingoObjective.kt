@@ -72,7 +72,10 @@ abstract class BingoObjective(
      * and renders [name], [description], difficulty, and completion status in
      * the item lore.
      *
-     * Override to show progress counters or a custom icon.
+     * Override to show progress counters or a custom icon. When you only need
+     * to inject extra lore lines (e.g. a progress counter), call
+     * [buildProgressItem] from your override instead of duplicating the
+     * standard layout.
      *
      * @param player    the player viewing the board
      * @param completed whether this cell has already been completed by [player]
@@ -102,6 +105,74 @@ abstract class BingoObjective(
                 .decoration(TextDecoration.ITALIC, false)
         } else {
             Component.text("○ Not yet completed", NamedTextColor.RED)
+                .decoration(TextDecoration.ITALIC, false)
+        }
+
+        meta.lore(lore)
+        item.itemMeta = meta
+        return item
+    }
+
+    /**
+     * Convenience helper for overriding [displayItem] with custom progress
+     * information.
+     *
+     * Produces an item with the standard lore layout (difficulty → description
+     * → [progressLines] → completion status), saving subclasses from duplicating
+     * the boilerplate. When [completed] is `true` the standard `"✓ Completed"`
+     * line is always shown. When [completed] is `false` and no [progressLines]
+     * are supplied, the standard `"○ Not yet completed"` line is shown.
+     *
+     * ### Example usage
+     * ```kotlin
+     * override fun displayItem(player: Player, completed: Boolean): ItemStack {
+     *     val progress = BingoManager.currentGame
+     *         ?.getOrCreateState(player.uniqueId)?.getProgress(id) ?: 0
+     *     return buildProgressItem(
+     *         player, completed,
+     *         Component.text("Progress: $progress/$count", NamedTextColor.YELLOW)
+     *     )
+     * }
+     * ```
+     *
+     * @param player        the player viewing the board
+     * @param completed     whether this cell has been completed by [player]
+     * @param progressLines zero or more lore lines inserted after the description
+     *                      and before the completion status; only used when
+     *                      [completed] is `false`
+     */
+    protected fun buildProgressItem(
+        player: Player,
+        completed: Boolean,
+        vararg progressLines: Component
+    ): ItemStack {
+        val material = if (completed) Material.LIME_CONCRETE else when (difficulty) {
+            Difficulty.EASY -> Material.GREEN_STAINED_GLASS
+            Difficulty.MEDIUM -> Material.YELLOW_STAINED_GLASS
+            Difficulty.HARD -> Material.RED_STAINED_GLASS
+            Difficulty.INSANE -> Material.PURPLE_STAINED_GLASS
+        }
+
+        val item = ItemStack(material)
+        val meta = item.itemMeta ?: return item
+
+        meta.displayName(name.decoration(TextDecoration.ITALIC, false))
+
+        val lore = mutableListOf<Component>()
+        lore += Component.text("Difficulty: ", NamedTextColor.GRAY)
+            .decoration(TextDecoration.ITALIC, false)
+            .append(difficulty.displayName().decoration(TextDecoration.ITALIC, false))
+        lore += Component.empty()
+        lore += description.decoration(TextDecoration.ITALIC, false)
+        lore += Component.empty()
+
+        if (completed) {
+            lore += Component.text("✓ Completed", NamedTextColor.GREEN)
+                .decoration(TextDecoration.ITALIC, false)
+        } else if (progressLines.isNotEmpty()) {
+            progressLines.forEach { lore += it.decoration(TextDecoration.ITALIC, false) }
+        } else {
+            lore += Component.text("○ Not yet completed", NamedTextColor.RED)
                 .decoration(TextDecoration.ITALIC, false)
         }
 

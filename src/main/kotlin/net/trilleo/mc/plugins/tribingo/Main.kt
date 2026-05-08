@@ -2,6 +2,7 @@ package net.trilleo.mc.plugins.tribingo
 
 import net.trilleo.mc.plugins.tribingo.bingo.BingoManager
 import net.trilleo.mc.plugins.tribingo.bingo.registry.BingoObjectiveRegistry
+import net.trilleo.mc.plugins.tribingo.bingo.registry.CodeObjectiveLoader
 import net.trilleo.mc.plugins.tribingo.bingo.registry.YamlObjectiveLoader
 import net.trilleo.mc.plugins.tribingo.config.PluginConfig
 import net.trilleo.mc.plugins.tribingo.data.BingoServerData
@@ -50,6 +51,8 @@ class Main : JavaPlugin() {
         // Initialise Bingo system
         logger.info("Initialising Bingo system...")
         BingoObjectiveRegistry.init(this)
+        CodeObjectiveLoader.load(this, BingoObjectiveRegistry,
+            "net.trilleo.mc.plugins.tribingo.bingo.custom")
         YamlObjectiveLoader.load(this, BingoObjectiveRegistry)
         BingoManager.init(this)
 
