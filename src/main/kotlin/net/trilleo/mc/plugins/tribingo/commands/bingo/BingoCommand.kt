@@ -9,10 +9,9 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
 /**
- * Sub-command dispatcher for all Bingo game management commands.
+ * Main command dispatcher for all Bingo game management commands.
  *
- * Registered as `/tribingo bingo` and dispatches to the following
- * sub-sub-commands:
+ * Registered as `/bingo` and dispatches to the following sub-commands:
  *
  * | Sub-command            | Permission            | Description                              |
  * |:-----------------------|:----------------------|:-----------------------------------------|
@@ -27,7 +26,7 @@ import org.bukkit.entity.Player
 class BingoCommand : PluginCommand(
     name = "bingo",
     description = "Manage and view the Bingo game",
-    usage = "/tribingo bingo <board|start|stop|reset|refresh|size <3-6>|status>",
+    usage = "/bingo <board|start|stop|reset|refresh|size <3-6>|status>",
     isMainCommand = true
 ) {
 
@@ -82,11 +81,11 @@ class BingoCommand : PluginCommand(
         }
         val game = BingoManager.currentGame
         if (game == null) {
-            sendMsg(sender, "<red>No game exists. Create one first with /tb bingo size <3-6>.")
+            sendMsg(sender, "<red>No game exists. Create one first with /bingo size <3-6>.")
             return true
         }
         if (game.state != GameState.INACTIVE) {
-            sendMsg(sender, "<red>The game cannot be started from state ${game.state}. Use /tb bingo reset first.")
+            sendMsg(sender, "<red>The game cannot be started from state ${game.state}. Use /bingo reset first.")
             return true
         }
         BingoManager.startGame()
@@ -126,13 +125,13 @@ class BingoCommand : PluginCommand(
         }
         val game = BingoManager.currentGame
         if (game == null) {
-            sendMsg(sender, "<red>No game exists. Create one first with /tb bingo size <3-6>.")
+            sendMsg(sender, "<red>No game exists. Create one first with /bingo size <3-6>.")
             return true
         }
         if (game.state != GameState.INACTIVE) {
             sendMsg(
                 sender,
-                "<red>The board can only be refreshed when the game is INACTIVE. Use /tb bingo reset first."
+                "<red>The board can only be refreshed when the game is INACTIVE. Use /bingo reset first."
             )
             return true
         }
@@ -148,7 +147,7 @@ class BingoCommand : PluginCommand(
         }
         val sizeStr = args.firstOrNull()
         if (sizeStr == null) {
-            sendMsg(sender, "<red>Usage: /tb bingo size <3-6>")
+            sendMsg(sender, "<red>Usage: /bingo size <3-6>")
             return true
         }
         val size = sizeStr.toIntOrNull()
@@ -157,7 +156,7 @@ class BingoCommand : PluginCommand(
             return true
         }
         runCatching { BingoManager.setBoardSize(size) }
-            .onSuccess { sendMsg(sender, "<green>Board size set to ${size}×${size}. Use /tb bingo start to begin.") }
+            .onSuccess { sendMsg(sender, "<green>Board size set to ${size}×${size}. Use /bingo start to begin.") }
             .onFailure { e -> sendMsg(sender, "<red>Could not set board size: ${e.message}") }
         return true
     }

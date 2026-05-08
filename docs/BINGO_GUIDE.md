@@ -524,9 +524,9 @@ bingo:
 
 ## Commands
 
-All Bingo commands are sub-commands of `/tribingo` (alias `/tb`), dispatched through `BingoCommand`.
+Bingo commands are available as the standalone `/bingo` command, dispatched through `BingoCommand`.
 
-### `/tb bingo <sub-command>`
+### `/bingo <sub-command>`
 
 | Sub-command  | Permission              | Who can use | Description                                                                            |
 |:-------------|:------------------------|:------------|:---------------------------------------------------------------------------------------|
@@ -538,7 +538,7 @@ All Bingo commands are sub-commands of `/tribingo` (alias `/tb`), dispatched thr
 | `size <3-6>` | `tribingo.bingo.manage` | Any sender  | Sets the board size; refreshes if same size and `INACTIVE`, creates new game otherwise |
 | `status`     | *(none)*                | Any sender  | Shows board size, game state, number of objectives, and active players                 |
 
-Tab-completion is supported: typing `/tb bingo ` shows all sub-commands; typing `/tb bingo size ` shows `3 4 5 6`.
+Tab-completion is supported: typing `/bingo ` shows all sub-commands; typing `/bingo size ` shows `3 4 5 6`.
 
 ---
 
@@ -547,7 +547,7 @@ Tab-completion is supported: typing `/tb bingo ` shows all sub-commands; typing 
 **Class:** `BingoBoardGUI` — `net.trilleo.mc.plugins.tribingo.guis`
 **GUI ID:** `bingo_board`
 
-Opened with `/tb bingo board` (players only) or via `GUIManager.open(player, "bingo_board")`.
+Opened with `/bingo board` (players only) or via `GUIManager.open(player, "bingo_board")`.
 
 ### Layout
 

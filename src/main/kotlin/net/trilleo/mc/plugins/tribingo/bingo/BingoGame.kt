@@ -63,7 +63,7 @@ class BingoGame(
                     NamedTextColor.YELLOW
                 )
             )
-            .append(Component.text("/tb bingo board", NamedTextColor.AQUA))
+            .append(Component.text("/bingo board", NamedTextColor.AQUA))
             .append(Component.text(".", NamedTextColor.YELLOW))
             .build()
 

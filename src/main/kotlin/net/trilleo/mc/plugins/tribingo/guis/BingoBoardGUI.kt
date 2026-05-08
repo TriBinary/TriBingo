@@ -120,7 +120,7 @@ class BingoBoardGUI : PluginGUI(
                     name("<red>No Bingo Game")
                     lore(
                         "<gray>No game has been set up yet.",
-                        "<gray>Ask an admin to run <white>/tb bingo size <3-6><gray>."
+                        "<gray>Ask an admin to run <white>/bingo size <3-6><gray>."
                     )
                 }
             )

@@ -69,7 +69,7 @@ object BingoManager {
             } else {
                 plugin.logger.info(
                     "[BingoManager] Not enough objectives for a ${defaultSize}×${defaultSize} board; " +
-                            "create a game manually with /tb bingo size <3-6>"
+                            "create a game manually with /bingo size <3-6>"
                 )
             }
         }
