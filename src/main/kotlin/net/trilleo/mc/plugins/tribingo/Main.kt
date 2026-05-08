@@ -51,8 +51,10 @@ class Main : JavaPlugin() {
         // Initialise Bingo system
         logger.info("Initialising Bingo system...")
         BingoObjectiveRegistry.init(this)
-        CodeObjectiveLoader.load(this, BingoObjectiveRegistry,
-            "net.trilleo.mc.plugins.tribingo.bingo.custom")
+        CodeObjectiveLoader.load(
+            this, BingoObjectiveRegistry,
+            "net.trilleo.mc.plugins.tribingo.bingo.custom"
+        )
         YamlObjectiveLoader.load(this, BingoObjectiveRegistry)
         BingoManager.init(this)
 
