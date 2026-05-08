@@ -76,15 +76,18 @@ class BingoGame(
      *
      * @param winner       the winning player, or `null` if the game ended without a winner
      * @param winnerPoints the winning player's final point total (used in the broadcast)
+     * @param winnerName   fallback display name used when [winner] is `null` but a winner
+     *                     is known (e.g. the top scorer was offline when the timer expired)
      * @throws IllegalStateException if [state] is not [GameState.ACTIVE]
      */
-    fun end(winner: Player?, winnerPoints: Int = 0) {
+    fun end(winner: Player?, winnerPoints: Int = 0, winnerName: String? = null) {
         check(state == GameState.ACTIVE) {
             "Cannot end: game is in state $state (expected ACTIVE)"
         }
         state = GameState.ENDED
 
-        val msg = if (winner != null) {
+        val displayName = winner?.name ?: winnerName
+        val msg = if (displayName != null) {
             val ptsSuffix = if (winnerPoints == 1) "" else "s"
             Component.text()
                 .append(
@@ -92,7 +95,7 @@ class BingoGame(
                         .decoration(TextDecoration.BOLD, true)
                 )
                 .append(
-                    Component.text(winner.name, NamedTextColor.YELLOW)
+                    Component.text(displayName, NamedTextColor.YELLOW)
                         .decoration(TextDecoration.BOLD, true)
                 )
                 .append(
