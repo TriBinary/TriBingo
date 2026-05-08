@@ -40,7 +40,9 @@ class TravelDistanceObjective(
         val game = BingoManager.currentGame ?: return
         if (game.state != GameState.ACTIVE) return
         val state = game.getOrCreateState(event.player.uniqueId)
-        if (state.getProgress(id) >= blocks) return  // already done — skip processing
+        // Skip further processing once the cell is already completed
+        val cell = game.board.cells.find { it.objective.id == id }
+        if (cell != null && state.isCompleted(cell.cellIndex)) return
         onEvent(event, event.player, state)
     }
 

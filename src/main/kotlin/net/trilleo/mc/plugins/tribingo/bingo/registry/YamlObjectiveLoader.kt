@@ -194,10 +194,14 @@ object YamlObjectiveLoader {
 
         typeHandlers["enchant_item"] = { e ->
             val enchantKey = e.str("enchantment").takeIf { it.isNotBlank() }
-            val enchantment = enchantKey?.let {
-                val key = org.bukkit.NamespacedKey.minecraft(it.lowercase())
-                org.bukkit.Registry.ENCHANTMENT.get(key)
-            }
+            val enchantment = if (enchantKey != null) {
+                val key = org.bukkit.NamespacedKey.minecraft(enchantKey.lowercase())
+                val result = org.bukkit.Registry.ENCHANTMENT.get(key)
+                if (result == null) {
+                    throw IllegalArgumentException("Unknown enchantment key '$enchantKey'")
+                }
+                result
+            } else null
             EnchantItemObjective(
                 id = e.requireStr("id"),
                 name = mm.deserialize(e.str("name", e.str("id"))),

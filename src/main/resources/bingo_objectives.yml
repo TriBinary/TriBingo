@@ -407,6 +407,6 @@ objectives:
     type: fish_item
     difficulty: INSANE
     name: "<dark_red>Treasure Hunter"
-    description: "<gray>Catch 3 items with a fishing rod (fish or entities)."
+    description: "<gray>Catch 3 items (fish or reeled-in entities) with a fishing rod."
     count: 3
     count_all: true
