@@ -3,6 +3,7 @@ package net.trilleo.mc.plugins.tribingo.data
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import net.trilleo.mc.plugins.tribingo.bingo.BingoPlayerState
+import net.trilleo.mc.plugins.tribingo.data.BingoServerData.Companion.DEFAULT_TIMER_SECONDS
 import net.trilleo.mc.plugins.tribingo.data.BingoServerData.Companion.KEY_PLAYER_STATES
 import net.trilleo.mc.plugins.tribingo.enums.GameState
 import java.util.*

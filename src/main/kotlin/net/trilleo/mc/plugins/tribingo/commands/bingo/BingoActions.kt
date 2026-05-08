@@ -5,6 +5,7 @@ import net.trilleo.mc.plugins.tribingo.commands.bingo.BingoActions.resetGame
 import net.trilleo.mc.plugins.tribingo.enums.GameState
 import net.trilleo.mc.plugins.tribingo.registration.GUIManager
 import org.bukkit.entity.Player
+
 /**
  * Encapsulates all Bingo game management actions so they can be invoked from
  * both [BingoCommand] and future GUI implementations without duplicating logic.
