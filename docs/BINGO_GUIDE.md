@@ -145,7 +145,7 @@ The singleton facade for the entire Bingo system. All gameplay operations flow t
 | `init(plugin)`                       | Stores the plugin reference and rehydrates or creates a default game on startup                 |
 | `save()`                             | Serialises the current game into `BingoServerData` for disk persistence; clears data if ACTIVE  |
 | `newGame(size: Int): BingoGame`      | Creates a new game with randomly selected objectives; size must be `3..6`                       |
-| `startGame()`                        | Transitions the current game from `INACTIVE` → `ACTIVE`; starts the countdown                  |
+| `startGame()`                        | Transitions the current game from `INACTIVE` → `ACTIVE`; starts the countdown                   |
 | `stopGame()`                         | Ends the current `ACTIVE` game without a winner; cancels the countdown                          |
 | `resetGame()`                        | Resets all player progress and returns the game to `INACTIVE`                                   |
 | `refreshBoard()`                     | Picks a new random set of objectives (game must be `INACTIVE`)                                  |
@@ -532,15 +532,15 @@ Bingo commands are available as the standalone `/bingo` command, dispatched thro
 
 ### `/bingo <sub-command>`
 
-| Sub-command              | Permission              | Who can use | Description                                                                            |
-|:-------------------------|:------------------------|:------------|:---------------------------------------------------------------------------------------|
-| `board`                  | *(none)*                | Players     | Opens the `BingoBoardGUI` for the sender                                               |
-| `start`                  | `tribingo.bingo.manage` | Any sender  | Starts the current game (must be `INACTIVE`); also starts the countdown               |
-| `stop`                   | `tribingo.bingo.manage` | Any sender  | Ends the current game without a winner (must be `ACTIVE`); cancels the countdown      |
-| `reset`                  | `tribingo.bingo.manage` | Any sender  | Resets all player progress; transitions game back to `INACTIVE`                        |
-| `refresh`                | `tribingo.bingo.manage` | Any sender  | Picks new random objectives for the current board (must be `INACTIVE`)                 |
-| `time <h> <m> <s>`       | `tribingo.bingo.manage` | Any sender  | Sets the countdown duration (hours, minutes, seconds); stored in server data           |
-| `status`                 | *(none)*                | Any sender  | Shows board size, game state, number of objectives, active players, and timer setting  |
+| Sub-command        | Permission              | Who can use | Description                                                                           |
+|:-------------------|:------------------------|:------------|:--------------------------------------------------------------------------------------|
+| `board`            | *(none)*                | Players     | Opens the `BingoBoardGUI` for the sender                                              |
+| `start`            | `tribingo.bingo.manage` | Any sender  | Starts the current game (must be `INACTIVE`); also starts the countdown               |
+| `stop`             | `tribingo.bingo.manage` | Any sender  | Ends the current game without a winner (must be `ACTIVE`); cancels the countdown      |
+| `reset`            | `tribingo.bingo.manage` | Any sender  | Resets all player progress; transitions game back to `INACTIVE`                       |
+| `refresh`          | `tribingo.bingo.manage` | Any sender  | Picks new random objectives for the current board (must be `INACTIVE`)                |
+| `time <h> <m> <s>` | `tribingo.bingo.manage` | Any sender  | Sets the countdown duration (hours, minutes, seconds); stored in server data          |
+| `status`           | *(none)*                | Any sender  | Shows board size, game state, number of objectives, active players, and timer setting |
 
 Tab-completion is supported: typing `/bingo ` shows all sub-commands; typing `/bingo time ` shows example values.
 
