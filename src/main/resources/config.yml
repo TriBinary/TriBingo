@@ -2,3 +2,14 @@
 
 # A friendly prefix shown before plugin messages
 message-prefix: "<click:suggest_command:/tribingo><gradient:yellow:gold>[TriBingo]"
+
+# ── Bingo Settings ────────────────────────────────────────────────────────────
+bingo:
+  # Default board side-length when no game is persisted on startup (3–6).
+  default-board-size: 4
+
+  # Win condition: LINE (first full row/column/diagonal) or FULL_BOARD (all cells).
+  win-condition: LINE
+
+  # Broadcast a message to all players when someone completes a bingo cell.
+  announce-completions: true

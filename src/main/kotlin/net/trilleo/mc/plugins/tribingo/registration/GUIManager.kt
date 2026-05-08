@@ -26,7 +26,7 @@ import org.bukkit.plugin.java.JavaPlugin
  */
 object GUIManager : Listener {
 
-    private const val GUIS_PACKAGE = "net.trilleo.mc.plugins.trihunt.guis"
+    private const val GUIS_PACKAGE = "net.trilleo.mc.plugins.tribingo.guis"
 
     private val guis = mutableMapOf<String, PluginGUI>()
     private val openGUIs = mutableMapOf<Player, Pair<PluginGUI, Inventory>>()

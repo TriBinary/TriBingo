@@ -14,7 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin
  */
 object ListenerRegistrar {
 
-    private const val LISTENERS_PACKAGE = "net.trilleo.mc.plugins.trihunt.listeners"
+    private const val LISTENERS_PACKAGE = "net.trilleo.mc.plugins.tribingo.listeners"
 
     /**
      * Scans the listeners package, instantiates every [Listener] found,

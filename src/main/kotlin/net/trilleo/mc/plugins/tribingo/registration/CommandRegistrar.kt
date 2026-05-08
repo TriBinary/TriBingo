@@ -26,7 +26,7 @@ import org.bukkit.plugin.java.JavaPlugin
  */
 object CommandRegistrar {
 
-    private const val COMMANDS_PACKAGE = "net.trilleo.mc.plugins.trihunt.commands"
+    private const val COMMANDS_PACKAGE = "net.trilleo.mc.plugins.tribingo.commands"
     private const val ROOT_COMMAND = "tribingo"
 
     /** All registered sub-commands, keyed by their name (lower-case). */

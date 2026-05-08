@@ -1,0 +1,412 @@
+# TriBingo — Default Bingo Objectives
+#
+# This file defines all objectives that can appear on the Bingo board.
+# Edit freely: add, remove, or adjust objectives to fit your server.
+# The file will NOT be overwritten on plugin restart.
+#
+# ── Fields ──────────────────────────────────────────────────────────────────
+#
+#   id          Unique identifier. Must match persistence keys — do not change
+#               after a game has been persisted.
+#
+#   type        Determines the event that triggers completion. Supported types:
+#                 kill_entity, mine_block, place_block, craft_item, fish_item,
+#                 eat_food, enchant_item, travel_distance, breed_mob, tame_entity
+#
+#   difficulty  EASY | MEDIUM | HARD | INSANE  (display only for now)
+#
+#   name        MiniMessage string shown in the GUI and announcements.
+#   description MiniMessage string shown when a player clicks the cell.
+#
+#   Additional parameters depend on the type (see each section below).
+#
+# ── MiniMessage reference ────────────────────────────────────────────────────
+#   <red>, <green>, <gold>, <aqua>, <gray>, <white>, <bold>, <i>, etc.
+#   Full docs: https://docs.advntr.dev/minimessage/format.html
+# ─────────────────────────────────────────────────────────────────────────────
+
+objectives:
+
+  # ══════════════════════════════════════════════════════════════
+  #  EASY
+  # ══════════════════════════════════════════════════════════════
+
+  - id: kill_chicken
+    type: kill_entity
+    difficulty: EASY
+    name: "<green>Chicken Dinner"
+    description: "<gray>Kill a chicken."
+    entity_type: CHICKEN
+    count: 1
+
+  - id: kill_cow
+    type: kill_entity
+    difficulty: EASY
+    name: "<green>Beef Supplier"
+    description: "<gray>Kill a cow."
+    entity_type: COW
+    count: 1
+
+  - id: kill_pig
+    type: kill_entity
+    difficulty: EASY
+    name: "<green>Pork Chop Hunt"
+    description: "<gray>Kill a pig."
+    entity_type: PIG
+    count: 1
+
+  - id: kill_sheep
+    type: kill_entity
+    difficulty: EASY
+    name: "<green>Wool Collector"
+    description: "<gray>Kill a sheep."
+    entity_type: SHEEP
+    count: 1
+
+  - id: mine_dirt
+    type: mine_block
+    difficulty: EASY
+    name: "<green>Digger"
+    description: "<gray>Mine 32 dirt blocks."
+    material: DIRT
+    count: 32
+
+  - id: mine_sand
+    type: mine_block
+    difficulty: EASY
+    name: "<green>Sandy Hands"
+    description: "<gray>Mine 16 sand blocks."
+    material: SAND
+    count: 16
+
+  - id: mine_gravel
+    type: mine_block
+    difficulty: EASY
+    name: "<green>Gravel Pit"
+    description: "<gray>Mine 16 gravel blocks."
+    material: GRAVEL
+    count: 16
+
+  - id: place_torch
+    type: place_block
+    difficulty: EASY
+    name: "<green>Let There Be Light"
+    description: "<gray>Place a torch."
+    material: TORCH
+    count: 1
+
+  - id: eat_bread
+    type: eat_food
+    difficulty: EASY
+    name: "<green>Breadwinner"
+    description: "<gray>Eat a piece of bread."
+    material: BREAD
+    count: 1
+
+  - id: eat_cooked_chicken
+    type: eat_food
+    difficulty: EASY
+    name: "<green>Bon Appétit"
+    description: "<gray>Eat cooked chicken."
+    material: COOKED_CHICKEN
+    count: 1
+
+  - id: craft_sticks
+    type: craft_item
+    difficulty: EASY
+    name: "<green>Stick Maker"
+    description: "<gray>Craft sticks at a crafting table."
+    material: STICK
+    count: 1
+
+  - id: travel_500_blocks
+    type: travel_distance
+    difficulty: EASY
+    name: "<green>Wanderer"
+    description: "<gray>Travel 500 blocks."
+    blocks: 500
+
+  # ══════════════════════════════════════════════════════════════
+  #  MEDIUM
+  # ══════════════════════════════════════════════════════════════
+
+  - id: kill_creeper
+    type: kill_entity
+    difficulty: MEDIUM
+    name: "<yellow>Creeper Slayer"
+    description: "<gray>Kill a Creeper."
+    entity_type: CREEPER
+    count: 1
+
+  - id: kill_5_zombies
+    type: kill_entity
+    difficulty: MEDIUM
+    name: "<yellow>Zombie Apocalypse"
+    description: "<gray>Kill 5 zombies."
+    entity_type: ZOMBIE
+    count: 5
+
+  - id: kill_skeleton
+    type: kill_entity
+    difficulty: MEDIUM
+    name: "<yellow>Bone Collector"
+    description: "<gray>Kill 3 skeletons."
+    entity_type: SKELETON
+    count: 3
+
+  - id: mine_iron_ore
+    type: mine_block
+    difficulty: MEDIUM
+    name: "<yellow>Iron Miner"
+    description: "<gray>Mine 8 iron ore blocks."
+    material: IRON_ORE
+    count: 8
+
+  - id: mine_coal_ore
+    type: mine_block
+    difficulty: MEDIUM
+    name: "<yellow>Coal Rush"
+    description: "<gray>Mine 16 coal ore blocks."
+    material: COAL_ORE
+    count: 16
+
+  - id: mine_deepslate_iron
+    type: mine_block
+    difficulty: MEDIUM
+    name: "<yellow>Deep Iron"
+    description: "<gray>Mine 8 deepslate iron ore blocks."
+    material: DEEPSLATE_IRON_ORE
+    count: 8
+
+  - id: place_crafting_table
+    type: place_block
+    difficulty: MEDIUM
+    name: "<yellow>Workshop Setup"
+    description: "<gray>Place a crafting table."
+    material: CRAFTING_TABLE
+    count: 1
+
+  - id: craft_iron_pickaxe
+    type: craft_item
+    difficulty: MEDIUM
+    name: "<yellow>Iron Age"
+    description: "<gray>Craft an iron pickaxe."
+    material: IRON_PICKAXE
+    count: 1
+
+  - id: craft_iron_sword
+    type: craft_item
+    difficulty: MEDIUM
+    name: "<yellow>Armed and Ready"
+    description: "<gray>Craft an iron sword."
+    material: IRON_SWORD
+    count: 1
+
+  - id: fish_any_1
+    type: fish_item
+    difficulty: MEDIUM
+    name: "<yellow>Gone Fishing"
+    description: "<gray>Catch 1 fish with a fishing rod."
+    count: 1
+
+  - id: eat_golden_apple
+    type: eat_food
+    difficulty: MEDIUM
+    name: "<yellow>Apple of Power"
+    description: "<gray>Eat a golden apple."
+    material: GOLDEN_APPLE
+    count: 1
+
+  - id: enchant_any_1
+    type: enchant_item
+    difficulty: MEDIUM
+    name: "<yellow>Mystical Arts"
+    description: "<gray>Enchant any item at an enchanting table."
+    count: 1
+
+  - id: travel_2000_blocks
+    type: travel_distance
+    difficulty: MEDIUM
+    name: "<yellow>Explorer"
+    description: "<gray>Travel 2000 blocks."
+    blocks: 2000
+
+  - id: tame_wolf
+    type: tame_entity
+    difficulty: MEDIUM
+    name: "<yellow>Best Friend"
+    description: "<gray>Tame a wolf."
+    entity_type: WOLF
+    count: 1
+
+  - id: breed_cows
+    type: breed_mob
+    difficulty: MEDIUM
+    name: "<yellow>Rancher"
+    description: "<gray>Breed cows."
+    entity_type: COW
+    count: 1
+
+  # ══════════════════════════════════════════════════════════════
+  #  HARD
+  # ══════════════════════════════════════════════════════════════
+
+  - id: kill_enderman
+    type: kill_entity
+    difficulty: HARD
+    name: "<red>Ender Hunter"
+    description: "<gray>Kill an Enderman."
+    entity_type: ENDERMAN
+    count: 1
+
+  - id: kill_blaze
+    type: kill_entity
+    difficulty: HARD
+    name: "<red>Flame Quencher"
+    description: "<gray>Kill a Blaze."
+    entity_type: BLAZE
+    count: 1
+
+  - id: kill_5_phantoms
+    type: kill_entity
+    difficulty: HARD
+    name: "<red>Nightmare Fighter"
+    description: "<gray>Kill 5 phantoms."
+    entity_type: PHANTOM
+    count: 5
+
+  - id: mine_diamond_ore
+    type: mine_block
+    difficulty: HARD
+    name: "<red>Diamond Rush"
+    description: "<gray>Mine 3 diamond ore blocks."
+    material: DIAMOND_ORE
+    count: 3
+
+  - id: mine_deepslate_diamond
+    type: mine_block
+    difficulty: HARD
+    name: "<red>Deep Diamond"
+    description: "<gray>Mine 3 deepslate diamond ore blocks."
+    material: DEEPSLATE_DIAMOND_ORE
+    count: 3
+
+  - id: craft_diamond_pickaxe
+    type: craft_item
+    difficulty: HARD
+    name: "<red>Diamond Tools"
+    description: "<gray>Craft a diamond pickaxe."
+    material: DIAMOND_PICKAXE
+    count: 1
+
+  - id: enchant_sharpness
+    type: enchant_item
+    difficulty: HARD
+    name: "<red>Sharp Edge"
+    description: "<gray>Enchant an item and receive Sharpness."
+    enchantment: sharpness
+    count: 1
+
+  - id: fish_5_times
+    type: fish_item
+    difficulty: HARD
+    name: "<red>Master Angler"
+    description: "<gray>Catch 5 fish with a fishing rod."
+    count: 5
+
+  - id: eat_suspicious_stew
+    type: eat_food
+    difficulty: HARD
+    name: "<red>Mystery Meal"
+    description: "<gray>Eat suspicious stew."
+    material: SUSPICIOUS_STEW
+    count: 1
+
+  - id: breed_3_animals
+    type: breed_mob
+    difficulty: HARD
+    name: "<red>Animal Farm"
+    description: "<gray>Breed 3 animals of any type."
+    count: 3
+
+  - id: tame_cat
+    type: tame_entity
+    difficulty: HARD
+    name: "<red>Cat Charmer"
+    description: "<gray>Tame a cat."
+    entity_type: CAT
+    count: 1
+
+  - id: travel_5000_blocks
+    type: travel_distance
+    difficulty: HARD
+    name: "<red>Long Haul"
+    description: "<gray>Travel 5000 blocks."
+    blocks: 5000
+
+  # ══════════════════════════════════════════════════════════════
+  #  INSANE
+  # ══════════════════════════════════════════════════════════════
+
+  - id: kill_elder_guardian
+    type: kill_entity
+    difficulty: INSANE
+    name: "<dark_red>Guardian Slayer"
+    description: "<gray>Kill an Elder Guardian."
+    entity_type: ELDER_GUARDIAN
+    count: 1
+
+  - id: kill_wither_skeleton
+    type: kill_entity
+    difficulty: INSANE
+    name: "<dark_red>Bone Reaper"
+    description: "<gray>Kill 3 Wither Skeletons."
+    entity_type: WITHER_SKELETON
+    count: 3
+
+  - id: mine_ancient_debris
+    type: mine_block
+    difficulty: INSANE
+    name: "<dark_red>Nether Archaeology"
+    description: "<gray>Mine 1 ancient debris."
+    material: ANCIENT_DEBRIS
+    count: 1
+
+  - id: craft_netherite_ingot
+    type: craft_item
+    difficulty: INSANE
+    name: "<dark_red>Netherite Forger"
+    description: "<gray>Craft a netherite ingot."
+    material: NETHERITE_INGOT
+    count: 1
+
+  - id: enchant_mending
+    type: enchant_item
+    difficulty: INSANE
+    name: "<dark_red>Eternal Mending"
+    description: "<gray>Enchant an item and receive Mending."
+    enchantment: mending
+    count: 1
+
+  - id: tame_horse
+    type: tame_entity
+    difficulty: INSANE
+    name: "<dark_red>Horse Whisperer"
+    description: "<gray>Tame a horse."
+    entity_type: HORSE
+    count: 1
+
+  - id: travel_10000_blocks
+    type: travel_distance
+    difficulty: INSANE
+    name: "<dark_red>World Traveller"
+    description: "<gray>Travel 10,000 blocks."
+    blocks: 10000
+
+  - id: fish_treasure
+    type: fish_item
+    difficulty: INSANE
+    name: "<dark_red>Treasure Hunter"
+    description: "<gray>Catch 3 items with a fishing rod (fish or entities)."
+    count: 3
+    count_all: true

@@ -20,7 +20,7 @@ import org.bukkit.plugin.java.JavaPlugin
  */
 object ItemRegistrar {
 
-    private const val ITEMS_PACKAGE = "net.trilleo.mc.plugins.trihunt.items"
+    private const val ITEMS_PACKAGE = "net.trilleo.mc.plugins.tribingo.items"
 
     /** All registered items keyed by their [PluginItem.id]. */
     private val items = mutableMapOf<String, PluginItem>()

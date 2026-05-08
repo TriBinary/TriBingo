@@ -1,6 +1,10 @@
 package net.trilleo.mc.plugins.tribingo
 
+import net.trilleo.mc.plugins.tribingo.bingo.BingoManager
+import net.trilleo.mc.plugins.tribingo.bingo.registry.BingoObjectiveRegistry
+import net.trilleo.mc.plugins.tribingo.bingo.registry.YamlObjectiveLoader
 import net.trilleo.mc.plugins.tribingo.config.PluginConfig
+import net.trilleo.mc.plugins.tribingo.data.BingoServerData
 import net.trilleo.mc.plugins.tribingo.data.PlayerDataManager
 import net.trilleo.mc.plugins.tribingo.data.ServerDataManager
 import net.trilleo.mc.plugins.tribingo.registration.*
@@ -19,8 +23,9 @@ class Main : JavaPlugin() {
         pluginConfig = PluginConfig(this)
         MessageUtil.init(pluginConfig.messagePrefix)
 
-        // Initialise data managers
+        // Initialise data managers (BingoServerData factory must be set first)
         logger.info("Initialising data managers...")
+        ServerDataManager.setFactory { BingoServerData() }
         ServerDataManager.init(this)
         PlayerDataManager.init(this)
 
@@ -42,6 +47,12 @@ class Main : JavaPlugin() {
         logger.info("Registering tasks...")
         TaskRegistrar.registerAll(this)
 
+        // Initialise Bingo system
+        logger.info("Initialising Bingo system...")
+        BingoObjectiveRegistry.init(this)
+        YamlObjectiveLoader.load(this, BingoObjectiveRegistry)
+        BingoManager.init(this)
+
         logger.info("Plugin enabled!")
     }
 
@@ -52,8 +63,9 @@ class Main : JavaPlugin() {
         // Remove all registered recipes
         RecipeRegistrar.unregisterAll()
 
-        // Persist data for any players still online and server-wide data
+        // Persist data for any players still online, bingo state, and server-wide data
         PlayerDataManager.saveAll()
+        BingoManager.save()
         ServerDataManager.save()
 
         logger.info("Plugin disabled!")
